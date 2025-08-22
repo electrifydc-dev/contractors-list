@@ -11,10 +11,11 @@ import {
   useLocation,
 } from "@remix-run/react";
 
+import Footer from "~/components/footer";
+import Navbar from "~/components/nav";
 import { getUser } from "~/session.server";
 import stylesheet from "~/tailwind.css";
-import Navbar from "~/components/nav";
-import Footer from "~/components/footer";
+
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -29,7 +30,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function App() {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
-  const hideNav = ["true", "1"].includes((params.get("hideNav") || "").toLowerCase());  return (
+  const hideNav = ["true", "1"].includes((params.get("hideNav") || "").toLowerCase()); return (
     <html lang="en" className="h-full">
       <head>
         <meta charSet="utf-8" />
