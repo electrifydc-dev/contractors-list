@@ -65,7 +65,13 @@ export async function loader(): Promise<ContractorResponse> {
 }
 
 export const meta: MetaFunction = () => [
-  { title: "Contractor List | re:Power DMV" },
+  { title: "Find Contractors | Electrify DC" },
+  { name: "description", content: "Find qualified contractors for your electrification project in Washington DC, Maryland, and Virginia. Search by service type, location, and certifications." },
+  { name: "robots", content: "index, follow" },
+  { property: "og:title", content: "Find Contractors | Electrify DC" },
+  { property: "og:description", content: "Find qualified contractors for your electrification project in Washington DC, Maryland, and Virginia." },
+  { property: "og:type", content: "website" },
+  { property: "og:url", content: "https://contractors.electrifydc.org" },
 ];
 
 interface PhoneLinkProps {

@@ -1,7 +1,7 @@
 import { NavLink } from "@remix-run/react";
 import { useState } from "react";
 
-const CONTACT_EMAIL = "team@civictechdc.org";
+const CONTACT_EMAIL = "team@electrifydc.org";
 
 function Navbar() {
   const [isMobileMenuToggled, setIsMobileMenuToggled] = useState(false);
@@ -14,14 +14,14 @@ function Navbar() {
     return (
       <div className="bg-zinc-700 py-2">
         <div className="text-center font-semibold">
-          This website is currently in beta and you may encounter issues while
-          using it. Please submit feedback to{" "}
+          Find qualified contractors for your electrification project.{" "}
           <a
             className="text-sky-500 underline"
             href={`mailto:${CONTACT_EMAIL}`}
           >
-            {CONTACT_EMAIL}
-          </a>
+            Contact us
+          </a>{" "}
+          for support.
         </div>
       </div>
     );
@@ -62,35 +62,39 @@ function Navbar() {
                   isPending ? "border-b-4" : isActive ? "border-b-4" : ""
                 }
               >
-                Contractor List
+                Find Contractors
               </NavLink>
             </li>
             <li className="inline-block">
-              <NavLink
-                to="/incentives"
-                className={({ isActive, isPending }) =>
-                  isPending ? "border-b-4" : isActive ? "border-b-4" : ""
-                }
+              <a
+                href="https://electrifydc.org"
+                className="hover:text-gray-300"
               >
-                Incentives
-              </NavLink>
+                Home
+              </a>
             </li>
             <li className="inline-block">
-              <NavLink
-                to="/resources"
-                className={({ isActive, isPending }) =>
-                  isPending ? "border-b-4" : isActive ? "border-b-4" : ""
-                }
+              <a
+                href="https://electrifydc.org/about"
+                className="hover:text-gray-300"
+              >
+                About
+              </a>
+            </li>
+            <li className="inline-block">
+              <a
+                href="https://electrifydc.org/resources"
+                className="hover:text-gray-300"
               >
                 Resources
-              </NavLink>
+              </a>
             </li>
             <li className="align-middle">
-              <NavLink to="/apply">
+              <a href="https://electrifydc.org/contact">
                 <button className="rounded bg-green-700 px-6 py-2 hover:bg-green-800">
-                  Apply
+                  Contact
                 </button>
-              </NavLink>
+              </a>
             </li>
           </ul>
         </div>

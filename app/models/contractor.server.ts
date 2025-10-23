@@ -1,6 +1,6 @@
-import { Contractor } from "@prisma/client";
-
-import { prisma } from "~/db.server";
+// Prisma types are no longer used - we use WordPress API instead
+// import { Contractor } from "@prisma/client";
+// import { prisma } from "~/db.server";
 import { sortByDistanceFromZip } from "~/lib/distances";
 import {
   Certification,
@@ -9,17 +9,17 @@ import {
   CreateContractorPayload,
   ContractorFilters
 } from "~/types";
+import { 
+  fetchContractorsFromWordPress, 
+  fetchContractorById as fetchWPContractorById,
+  transformWordPressContractor,
+  WordPressFilters 
+} from "~/services/wordpress-api";
 
-export const getContractorById = async (id: Contractor["id"]) => {
+export const getContractorById = async (id: string) => {
   try {
-    const contractor = await prisma.contractor.findUnique({
-      where: { id },
-      include: {
-        certifications: true,
-        services: true,
-        statesServed: true,
-      },
-    });
+    const wpContractor = await fetchWPContractorById(parseInt(id));
+    const contractor = transformWordPressContractor(wpContractor);
     return contractor;
   } catch (error) {
     console.error(`Error fetching contractor by ID ${id}:`, error);
@@ -27,18 +27,14 @@ export const getContractorById = async (id: Contractor["id"]) => {
   }
 };
 
-//get contractor by name
-export async function getContractorByName(name: Contractor["name"]) {
+//get contractor by name - now uses WordPress API
+export async function getContractorByName(name: string) {
   try {
-    const contractor = await prisma.contractor.findFirst({
-      where: { name },
-      include: {
-        certifications: true,
-        services: true,
-        statesServed: true,
-      },
-    });
-    return contractor;
+    const wpResponse = await fetchContractorsFromWordPress({ search: name });
+    if (wpResponse.contractors.length > 0) {
+      return transformWordPressContractor(wpResponse.contractors[0]);
+    }
+    return null;
   } catch (error) {
     console.error(`Error fetching contractor by name ${name}:`, error);
     throw new Error("Failed to fetch contractor");
@@ -46,120 +42,60 @@ export async function getContractorByName(name: Contractor["name"]) {
 }
 
 export const getContractors = async ({zip, certifications, services, stateServed}:ContractorFilters, page = 1, pageSize = 10) => {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  const filterBy: any = { isDraft: 0 };
-
-  if (certifications && certifications.length > 0) {
-    filterBy["certifications"] = {
-      some: {
-        shortName: {
-          in: certifications,
-        },
-      },
-    };
-  }
-
-  if (services && services.length > 0) {
-    filterBy["services"] = {
-      some: {
-        name: {
-          in: services,
-        },
-      },
-    };
-  }
-
-  if (stateServed) {
-    filterBy["statesServed"] = {
-      some: {
-        name: stateServed,
-      },
-    };
-  }
-
-  // Query DB for contractors matching the filters specified
-  // todo: ensure indices exist as necessary to ensure optimized searched for any permutation of filters
-  let contractors;
   try {
-    contractors = await prisma.contractor.findMany({
-      include: {
-        certifications: true,
-        services: true,
-        statesServed: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-      where: filterBy,
-    });
-  } catch (error) {
-    console.error("Error fetching contractors:", error);
-    throw new Error("Failed to fetch contractors");
-  }
+    // Map the existing filters to WordPress API parameters
+    const wpFilters: WordPressFilters = {
+      page,
+      per_page: pageSize,
+    };
 
-  // If there's a zip filter then go fetch distances and sort by distance
-  if (zip) {
-    try {
-      contractors = await sortByDistanceFromZip(contractors, zip);
-    } catch (error) {
-      console.log("Error fetching distances from zip: ", error);
-      throw new Error("Failed to fetch distances from zip");
+    // Add service type filter (map services to service_type taxonomy)
+    if (services && services.length > 0) {
+      // For now, use the first service type - we can enhance this later
+      wpFilters.service_type = services[0];
     }
+
+    // Add location filter if provided
+    if (stateServed) {
+      wpFilters.location = stateServed;
+    }
+
+    // Fetch contractors from WordPress
+    const wpResponse = await fetchContractorsFromWordPress(wpFilters);
+    
+    // Transform WordPress contractors to match existing app structure
+    const contractors = wpResponse.contractors.map(transformWordPressContractor);
+
+    // If there's a zip filter, sort by distance (keep existing distance logic)
+    if (zip) {
+      try {
+        const sortedContractors = await sortByDistanceFromZip(contractors, zip);
+        return {
+          contractors: sortedContractors,
+          totalPages: wpResponse.totalPages,
+          currentPage: wpResponse.currentPage,
+        };
+      } catch (error) {
+        console.log("Error fetching distances from zip: ", error);
+        // If distance calculation fails, return unsorted results
+        return {
+          contractors,
+          totalPages: wpResponse.totalPages,
+          currentPage: wpResponse.currentPage,
+        };
+      }
+    }
+
+    return {
+      contractors,
+      totalPages: wpResponse.totalPages,
+      currentPage: wpResponse.currentPage,
+    };
+  } catch (error) {
+    console.error("Error fetching contractors from WordPress:", error);
+    throw new Error("Failed to fetch contractors from WordPress");
   }
-
-  const totalContractors = contractors.length;
-  const startPage = (page - 1) * pageSize;
-  contractors = contractors.slice(startPage, startPage + pageSize);
-
-  return {
-    contractors,
-    totalPages: Math.ceil(totalContractors / pageSize),
-    currentPage: page,
-  };
 };
 
-export async function createContractor(contractor: CreateContractorPayload) {
-  try {
-    const statesServed = [];
-    for (const stateName of contractor["statesServed"]) {
-      const state: State = await prisma.state.findFirstOrThrow({
-        where: { name: stateName },
-      });
-      statesServed.push(state);
-    }
-    const services = [];
-    for (const serviceName of contractor["services"]) {
-      const service: Service = await prisma.service.findFirstOrThrow({
-        where: { name: serviceName },
-      });
-      services.push(service);
-    }
-    const certifications = [];
-    for (const certificationName of contractor["certifications"]) {
-      const certification: Certification =
-        await prisma.certification.findFirstOrThrow({
-          where: { shortName: certificationName },
-        });
-      certifications.push(certification);
-    }
-
-    return prisma.contractor.create({
-      data: {
-        ...contractor,
-        statesServed: {
-          connect: statesServed,
-        },
-        services: {
-          connect: services,
-        },
-        certifications: {
-          connect: certifications,
-        },
-        isDraft: 1,
-      },
-    });
-  } catch (error) {
-    console.error("Error creating contractor", error);
-    throw new Error("Could not create contractor listing");
-  }
-}
+// createContractor function removed - contractors are now managed in WordPress
+// Use WordPress admin panel to add/edit contractors
