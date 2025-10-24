@@ -1,7 +1,7 @@
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
 
-import type { User } from "~/models/user.server";
+// import type { User } from "~/models/user.server"; // User types disabled
 
 const DEFAULT_REDIRECT = "/";
 
@@ -44,31 +44,17 @@ export function useMatchesData(
   return route?.data as Record<string, unknown>;
 }
 
-function isUser(user: unknown): user is User {
-  return (
-    user != null &&
-    typeof user === "object" &&
-    "email" in user &&
-    typeof user.email === "string"
-  );
+// User functions disabled for contractor directory
+function isUser(user: unknown): user is any {
+  return false; // Always return false since user auth is disabled
 }
 
-export function useOptionalUser(): User | undefined {
-  const data = useMatchesData("root");
-  if (!data || !isUser(data.user)) {
-    return undefined;
-  }
-  return data.user;
+export function useOptionalUser(): any {
+  return undefined; // No user authentication in contractor directory
 }
 
-export function useUser(): User {
-  const maybeUser = useOptionalUser();
-  if (!maybeUser) {
-    throw new Error(
-      "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead.",
-    );
-  }
-  return maybeUser;
+export function useUser(): any {
+  throw new Error("User authentication is disabled in contractor directory");
 }
 
 export function isEmpty(val: string): boolean {
