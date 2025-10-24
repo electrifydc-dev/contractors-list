@@ -13,7 +13,7 @@ import {
 
 import Footer from "~/components/footer";
 import Navbar from "~/components/nav";
-import { getUser } from "~/session.server";
+// import { getUser } from "~/session.server"; // User authentication disabled
 import stylesheet from "~/tailwind.css";
 
 
@@ -24,7 +24,8 @@ export const links: LinksFunction = () => [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  return json({ user: await getUser(request) });
+  // User authentication disabled for contractor directory
+  return json({ user: null });
 };
 
 export default function App() {
