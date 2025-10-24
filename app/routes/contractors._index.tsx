@@ -60,8 +60,18 @@ export async function action({
 }
 
 export async function loader(): Promise<ContractorResponse> {
-  const data = await getContractors({} as ContractorFilters);
-  return data as ContractorResponse;
+  try {
+    const data = await getContractors({} as ContractorFilters);
+    return data as ContractorResponse;
+  } catch (error) {
+    console.error("Error fetching contractors:", error);
+    // Return empty state when WordPress API is not available
+    return {
+      contractors: [],
+      totalPages: 0,
+      currentPage: 1,
+    };
+  }
 }
 
 export const meta: MetaFunction = () => [
@@ -280,9 +290,29 @@ export default function ContractorList() {
         </div>
       </fetcher.Form>
       <ul className="mt-6 space-y-4">
-        {filteredContractors.map((contractor: Contractor) => (
-          <ContractorBlock contractor={contractor} key={contractor.name} />
-        ))}
+        {filteredContractors.length === 0 ? (
+          <li className="text-center py-8">
+            <div className="bg-gray-50 rounded-lg p-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No contractors found
+              </h3>
+              <p className="text-gray-600 mb-4">
+                We're currently setting up our contractor directory. 
+                Please check back soon or contact us for recommendations.
+              </p>
+              <a 
+                href="https://electrifydc.org/contact" 
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-700 hover:bg-green-800"
+              >
+                Contact Us
+              </a>
+            </div>
+          </li>
+        ) : (
+          filteredContractors.map((contractor: Contractor) => (
+            <ContractorBlock contractor={contractor} key={contractor.name} />
+          ))
+        )}
       </ul>
       <Pagination className="mt-4">
         <PaginationContent>
