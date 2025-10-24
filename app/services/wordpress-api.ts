@@ -167,7 +167,6 @@ export async function fetchServiceTypes(): Promise<Array<{ id: number; name: str
  */
 export function transformWordPressContractor(wpContractor: WordPressContractor) {
   const acf = wpContractor.acf || {};
-  const serviceTypes = wpContractor.contractor_service_type || [];
   
   // Get featured image URL
   const featuredImageUrl = wpContractor._embedded?.['wp:featuredmedia']?.[0]?.source_url || 
@@ -183,10 +182,11 @@ export function transformWordPressContractor(wpContractor: WordPressContractor) 
   if (acf.water_heater) services.push({ id: 5, name: 'Water Heater', description: 'Water heater services' });
   if (acf.appliances) services.push({ id: 6, name: 'Appliances', description: 'Appliance services' });
 
+  // Ensure all required fields are present and properly typed
   return {
     id: wpContractor.id.toString(),
-    name: wpContractor.title.rendered,
-    description: wpContractor.content.rendered.replace(/<[^>]*>/g, ''), // Strip HTML tags
+    name: wpContractor.title.rendered || 'Unnamed Contractor',
+    description: (wpContractor.content.rendered || '').replace(/<[^>]*>/g, ''), // Strip HTML tags
     email: acf.email || '',
     phone: acf.phone_number || '',
     website: acf.website || '',
@@ -195,7 +195,7 @@ export function transformWordPressContractor(wpContractor: WordPressContractor) 
     city: acf.city || '',
     state: acf.state || '',
     zip: acf.zip_code || '',
-    featuredImageUrl,
+    featuredImageUrl: featuredImageUrl || '',
     // Use the services we created from boolean fields
     services: services,
     // For now, we'll use empty arrays for these since they're not in WordPress
