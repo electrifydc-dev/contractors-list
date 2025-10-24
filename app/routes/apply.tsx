@@ -2,7 +2,8 @@ import { MetaFunction, ActionFunctionArgs, redirect } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import React, { useState, Dispatch, SetStateAction } from "react";
 
-import { createContractor } from "~/models/contractor.server";
+// createContractor removed - contractors are now managed in WordPress admin
+// import { createContractor } from "~/models/contractor.server";
 
 import content from "../content/apply.json";
 import {
@@ -563,7 +564,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return { errors };
   }  
   
-  await createContractor(
+  // Contractor application disabled - contractors are curated through WordPress admin
+  // await createContractor(
     {...payload, services, statesServed, certifications}
   );
   return redirect(REDIRECT_URL);
