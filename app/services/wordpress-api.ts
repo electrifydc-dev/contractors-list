@@ -96,13 +96,19 @@ export async function fetchContractorsFromWordPress(
   }
 
   try {
+    console.log('Fetching from WordPress API:', `${WORDPRESS_API_BASE}/contractor?${params.toString()}`);
     const response = await fetch(`${WORDPRESS_API_BASE}/contractor?${params.toString()}`);
     
+    console.log('WordPress API response status:', response.status);
+    
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('WordPress API error response:', errorText);
       throw new Error(`WordPress API error: ${response.status} ${response.statusText}`);
     }
 
     const contractors: WordPressContractor[] = await response.json();
+    console.log('WordPress API returned contractors:', contractors.length, 'contractors');
     
     // Get total pages from response headers
     const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
