@@ -1,5 +1,8 @@
-import type { User, Note } from "@prisma/client";
+// Notes functionality disabled - using WordPress API instead
+// This file is kept for compatibility but notes are not needed for contractor directory
 
+/*
+import type { User, Note } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 export function getNote({
@@ -50,3 +53,4 @@ export function deleteNote({
     where: { id, userId },
   });
 }
+*/

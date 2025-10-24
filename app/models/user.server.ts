@@ -1,6 +1,9 @@
+// User authentication disabled - using WordPress API instead
+// This file is kept for compatibility but user auth is not needed for contractor directory
+
+/*
 import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
 import { prisma } from "~/db.server";
 
 export type { User } from "@prisma/client";
@@ -28,14 +31,11 @@ export async function createUser(email: User["email"], password: string) {
   });
 }
 
-export async function deleteUserByEmail(email: User["email"]) {
+export async function deleteUser(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }
 
-export async function verifyLogin(
-  email: User["email"],
-  password: Password["hash"],
-) {
+export async function verifyLogin(email: User["email"], password: string) {
   const userWithPassword = await prisma.user.findUnique({
     where: { email },
     include: {
@@ -47,17 +47,14 @@ export async function verifyLogin(
     return null;
   }
 
-  const isValid = await bcrypt.compare(
-    password,
-    userWithPassword.password.hash,
-  );
+  const isValid = await bcrypt.compare(password, userWithPassword.password.hash);
 
   if (!isValid) {
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { password: _password, ...userWithoutPassword } = userWithPassword;
 
   return userWithoutPassword;
 }
+*/

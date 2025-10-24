@@ -1,7 +1,7 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
 import type { LoaderFunctionArgs } from "@remix-run/node";
 
-import { prisma } from "~/db.server";
+// import { prisma } from "~/db.server"; // Prisma disabled - using WordPress API
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const host =
@@ -9,14 +9,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const url = new URL("/", `http://${host}`);
-    // if we can connect to the database and make a simple query
-    // and make a HEAD request to ourselves, then we're good.
-    await Promise.all([
-      prisma.user.count(),
-      fetch(url.toString(), { method: "HEAD" }).then((r) => {
-        if (!r.ok) return Promise.reject(r);
-      }),
-    ]);
+    // Database is now handled by WordPress REST API
+    // Just check if we can make a HEAD request to ourselves
+    await fetch(url.toString(), { method: "HEAD" }).then((r) => {
+      if (!r.ok) return Promise.reject(r);
+    });
     return new Response("OK");
   } catch (error: unknown) {
     console.log("healthcheck ❌", { error });
