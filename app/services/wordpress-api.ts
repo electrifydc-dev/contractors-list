@@ -96,7 +96,7 @@ export async function fetchContractorsFromWordPress(
   }
 
   try {
-    const response = await fetch(`${WORDPRESS_API_BASE}/contractors?${params.toString()}`);
+    const response = await fetch(`${WORDPRESS_API_BASE}/contractor?${params.toString()}`);
     
     if (!response.ok) {
       throw new Error(`WordPress API error: ${response.status} ${response.statusText}`);
@@ -124,7 +124,7 @@ export async function fetchContractorsFromWordPress(
  */
 export async function fetchContractorById(id: number): Promise<WordPressContractor> {
   try {
-    const response = await fetch(`${WORDPRESS_API_BASE}/contractors/${id}?_embed=true`);
+    const response = await fetch(`${WORDPRESS_API_BASE}/contractor/${id}?_embed=true`);
     
     if (!response.ok) {
       throw new Error(`WordPress API error: ${response.status} ${response.statusText}`);
