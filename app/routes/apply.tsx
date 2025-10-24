@@ -565,8 +565,8 @@ export async function action({ request }: ActionFunctionArgs) {
   }  
   
   // Contractor application disabled - contractors are curated through WordPress admin
-  // await createContractor(
-    {...payload, services, statesServed, certifications}
-  );
+  // await createContractor({...payload, services, statesServed, certifications});
+  
+  // For now, just redirect to success page
   return redirect(REDIRECT_URL);
 }
