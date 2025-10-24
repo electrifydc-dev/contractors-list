@@ -60,24 +60,13 @@ export async function action({
 }
 
 export async function loader(): Promise<ContractorResponse> {
-  try {
-    console.log("Loading contractors from WordPress API...");
-    const data = await getContractors({} as ContractorFilters);
-    console.log("Successfully loaded contractors:", data);
-    return data as ContractorResponse;
-  } catch (error) {
-    console.error("Error fetching contractors:", error);
-    console.error("Error details:", {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
-    // Return empty state when WordPress API is not available
-    return {
-      contractors: [],
-      totalPages: 0,
-      currentPage: 1,
-    };
-  }
+  // Temporarily disable WordPress API to test if app loads
+  console.log("Loading contractors - temporarily disabled WordPress API");
+  return {
+    contractors: [],
+    totalPages: 0,
+    currentPage: 1,
+  };
 }
 
 export const meta: MetaFunction = () => [
