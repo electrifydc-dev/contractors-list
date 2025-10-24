@@ -1,6 +1,5 @@
 import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -8,14 +7,9 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLocation,
 } from "@remix-run/react";
 
-import Footer from "~/components/footer";
-import Navbar from "~/components/nav";
-// import { getUser } from "~/session.server"; // User authentication disabled
 import stylesheet from "~/tailwind.css";
-
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -23,15 +17,8 @@ export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  // User authentication disabled for contractor directory
-  return json({ user: null });
-};
-
 export default function App() {
-  const { search } = useLocation();
-  const params = new URLSearchParams(search);
-  const hideNav = ["true", "1"].includes((params.get("hideNav") || "").toLowerCase()); return (
+  return (
     <html lang="en" className="h-full">
       <head>
         <meta charSet="utf-8" />
@@ -58,18 +45,7 @@ export default function App() {
         />
       </head>
       <body className="h-full">
-        {!hideNav ?
-          <>
-            <Navbar />
-            <main className="relative min-h-screen bg-white p-4 md:p-8 mt-[160px] md:mt-[144px]">
-              <Outlet />
-            </main>
-            <Footer />
-          </> : <>
-            <main className="relative min-h-screen bg-white p-4 md:p-8">
-              <Outlet />
-            </main>
-          </>}
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
