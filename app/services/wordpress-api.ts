@@ -12,15 +12,20 @@ export interface WordPressContractor {
     rendered: string;
   };
   acf?: {
-    phone?: string;
-    email?: string;
-    website?: string;
-    location?: string;
-    address?: string;
+    street_1?: string;
+    street_2?: string;
     city?: string;
     state?: string;
-    zip?: string;
-    google_rating?: number;
+    zip_code?: string;
+    phone_number?: string;
+    website?: string;
+    email?: string;
+    energy_audit?: boolean;
+    weatherization?: boolean;
+    hvac_heat_pump?: boolean;
+    electrical?: boolean;
+    water_heater?: boolean;
+    appliances?: boolean;
   };
   featured_media?: number;
   featured_media_url?: string;
@@ -91,7 +96,7 @@ export async function fetchContractorsFromWordPress(
   }
 
   try {
-    const response = await fetch(`${WORDPRESS_API_BASE}/contractor?${params.toString()}`);
+    const response = await fetch(`${WORDPRESS_API_BASE}/contractors?${params.toString()}`);
     
     if (!response.ok) {
       throw new Error(`WordPress API error: ${response.status} ${response.statusText}`);
@@ -119,7 +124,7 @@ export async function fetchContractorsFromWordPress(
  */
 export async function fetchContractorById(id: number): Promise<WordPressContractor> {
   try {
-    const response = await fetch(`${WORDPRESS_API_BASE}/contractor/${id}?_embed=true`);
+    const response = await fetch(`${WORDPRESS_API_BASE}/contractors/${id}?_embed=true`);
     
     if (!response.ok) {
       throw new Error(`WordPress API error: ${response.status} ${response.statusText}`);
@@ -163,30 +168,34 @@ export function transformWordPressContractor(wpContractor: WordPressContractor) 
                            wpContractor.featured_media_url || 
                            null;
 
+  // Convert boolean service fields to service objects
+  const services = [];
+  if (acf.energy_audit) services.push({ id: 1, name: 'Energy Audit', description: 'Energy audit services' });
+  if (acf.weatherization) services.push({ id: 2, name: 'Weatherization', description: 'Weatherization services' });
+  if (acf.hvac_heat_pump) services.push({ id: 3, name: 'HVAC / Heat Pump', description: 'HVAC and heat pump services' });
+  if (acf.electrical) services.push({ id: 4, name: 'Electrical', description: 'Electrical services' });
+  if (acf.water_heater) services.push({ id: 5, name: 'Water Heater', description: 'Water heater services' });
+  if (acf.appliances) services.push({ id: 6, name: 'Appliances', description: 'Appliance services' });
+
   return {
     id: wpContractor.id.toString(),
     name: wpContractor.title.rendered,
     description: wpContractor.content.rendered.replace(/<[^>]*>/g, ''), // Strip HTML tags
     email: acf.email || '',
-    phone: acf.phone || '',
+    phone: acf.phone_number || '',
     website: acf.website || '',
-    addressLine1: acf.address || '',
-    addressLine2: '',
+    addressLine1: acf.street_1 || '',
+    addressLine2: acf.street_2 || '',
     city: acf.city || '',
     state: acf.state || '',
-    zip: acf.zip || '',
-    location: acf.location || '',
+    zip: acf.zip_code || '',
     featuredImageUrl,
-    googleRating: acf.google_rating || null,
-    // Map service types to the expected format
-    services: serviceTypes.map(st => ({
-      id: st.id,
-      name: st.name,
-      description: ''
-    })),
+    // Use the services we created from boolean fields
+    services: services,
     // For now, we'll use empty arrays for these since they're not in WordPress
     statesServed: [],
     certifications: [],
     distance: undefined
   };
 }
+
